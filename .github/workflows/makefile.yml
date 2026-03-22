@@ -1,0 +1,38 @@
+name: Build pcan_pro_x
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:   # allows manual trigger from GitHub UI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install ARM GCC toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi make
+
+      - name: Verify toolchain
+        run: arm-none-eabi-gcc --version
+
+      - name: Build PRO FD firmware
+        run: make profd
+
+      - name: Build PRO firmware
+        run: make pro
+
+      - name: Upload BIN artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pcan_pro_x_firmware
+          path: |
+            build-profd/*.bin
+            build-profd/*.hex
+            build-pro/*.bin
+            build-pro/*.hex
